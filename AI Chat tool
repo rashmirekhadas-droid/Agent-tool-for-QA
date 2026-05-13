@@ -220,3 +220,88 @@ const analyticsSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Analytics', analyticsSchema);
+// Create new customer
+app.post('/crm', async (req, res) => {
+  const customer = new Customer(req.body);
+  await customer.save();
+  res.json(customer);
+});
+
+// Get all customers
+app.get('/crm', async (req, res) => {
+  const customers = await Customer.find();
+  res.json(customers);
+});
+
+// Get single customer by ID
+app.get('/crm/:id', async (req, res) => {
+  const customer = await Customer.findById(req.params.id);
+  res.json(customer);
+});
+
+// Update customer
+app.put('/crm/:id', async (req, res) => {
+
+  const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(customer);
+});
+
+// Delete customer
+app.delete('/crm/:id', async (req, res) => {
+  await Customer.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+// Send message
+app.post('/messages', async (req, res) => {
+  const msg = new Message(req.body);
+  await msg.save();
+  res.json(msg);
+});
+
+// Get all messages
+app.get('/messages', async (req, res) => {
+  const msgs = await Message.find().sort({ timestamp: -1 });
+  res.json(msgs);
+});
+// Create campaign
+app.post('/campaigns', async (req, res) => {
+  const campaign = new Campaign(req.body);
+  await campaign.save();
+  res.json(campaign);
+});
+
+// Get all campaigns
+app.get('/campaigns', async (req, res) => {
+  const campaigns = await Campaign.find();
+  res.json(campaigns);
+});
+
+// Get single campaign
+app.get('/campaigns/:id', async (req, res) => {
+  const campaign = await Campaign.findById(req.params.id);
+  res.json(campaign);
+});
+
+// Update campaign
+app.put('/campaigns/:id', async (req, res) => {
+  const campaign = await Campaign.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(campaign);
+});
+
+// Delete campaign
+app.delete('/campaigns/:id', async (req, res) => {
+  await Campaign.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+// Get analytics
+app.get('/analytics', async (req, res) => {
+  const analytics = await Analytics.findOne().sort({ updatedAt: -1 });
+  res.json(analytics || { messagesSent: 0, campaignsRun: 0, conversionRate: 0 });
+});
+
+// Update analytics
+app.put('/analytics', async (req, res) => {
+  const analytics = new Analytics(req.body);
+  await analytics.save();
+  res.json(analytics);
+});
