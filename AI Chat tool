@@ -132,3 +132,91 @@ function Inbox() {
 }
 
 export default Inbox;
+// Add to server.js
+app.get('/messages', async (req, res) => {
+  const msgs = await Message.find().sort({ timestamp: -1 });
+  res.json(msgs);
+});
+// Inbox.js
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+function Inbox() {
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    axios.get('/messages').then(res => setMessages(res.data));
+  }, []);
+
+  return (
+    <div>
+      <h2>Inbox</h2>
+      {messages.map((m, i) => (
+        <div key={i}>
+          <strong>{m.channel}</strong> | {m.sender}: {m.text}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default Inbox;
+const mongoose = require('mongoose');
+
+const customerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String },
+  phone: { type: String },
+  purchaseHistory: [
+    {
+      productId: String,
+      productName: String,
+      date: Date,
+      amount: Number
+    }
+  ],
+  engagementScore: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('Customer', customerSchema);
+const mongoose = require('mongoose');
+
+const messageSchema = new mongoose.Schema({
+  channel: { type: String, enum: ['WhatsApp', 'Email', 'Instagram', 'Web'], required: true },
+  sender: { type: String, required: true },
+  receiver: { type: String, required: true },
+  text: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  status: { type: String, enum: ['sent', 'delivered', 'read'], default: 'sent' }
+});
+
+module.exports = mongoose.model('Message', messageSchema);
+const mongoose = require('mongoose');
+
+const campaignSchema = new mongoose.Schema({
+  type: { type: String, enum: ['WhatsApp', 'Email', 'SMS'], required: true },
+  name: { type: String, required: true },
+  content: { type: String, required: true },
+  recipients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Customer' }],
+  sentAt: { type: Date, default: Date.now },
+  status: { type: String, enum: ['draft', 'sent', 'scheduled'], default: 'draft' },
+  analytics: {
+    delivered: { type: Number, default: 0 },
+    opened: { type: Number, default: 0 },
+    clicked: { type: Number, default: 0 },
+    conversions: { type: Number, default: 0 }
+  }
+});
+
+module.exports = mongoose.model('Campaign', campaignSchema);
+const mongoose = require('mongoose');
+
+const analyticsSchema = new mongoose.Schema({
+  messagesSent: { type: Number, default: 0 },
+  campaignsRun: { type: Number, default: 0 },
+  conversionRate: { type: Number, default: 0 },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('Analytics', analyticsSchema);
