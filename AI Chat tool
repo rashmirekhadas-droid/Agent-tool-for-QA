@@ -49,3 +49,38 @@ io.on('connection', (socket) => {
     io.emit('newMessage', data);
   });
 });
+// App.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [analytics, setAnalytics] = useState({});
+
+  useEffect(() => {
+    axios.get('/analytics').then(res => setAnalytics(res.data));
+  }, []);
+
+  const sendMessage = async () => {
+    const msg = { channel: 'WhatsApp', text: 'Hello Customer!' };
+    await axios.post('/messages', msg);
+    setMessages([...messages, msg]);
+  };
+
+  return (
+    <div>
+      <h1>Unified Customer Experience App</h1>
+      <button onClick={sendMessage}>Send Test Message</button>
+      <h2>Inbox</h2>
+      <ul>
+        {messages.map((m, i) => <li key={i}>{m.channel}: {m.text}</li>)}
+      </ul>
+      <h2>Analytics</h2>
+      <p>Messages Sent: {analytics.messagesSent}</p>
+      <p>Campaigns Run: {analytics.campaignsRun}</p>
+      <p>Conversion Rate: {analytics.conversionRate}</p>
+    </div>
+  );
+}
+
+export default App;
