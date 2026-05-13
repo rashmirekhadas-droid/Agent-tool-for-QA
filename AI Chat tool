@@ -1,0 +1,51 @@
+// server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const socketIO = require('socket.io');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// MongoDB connection
+mongoose.connect('mongodb://localhost:27017/customerApp', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+// Models
+const Customer = require('./models/Customer');
+const Message = require('./models/Message');
+
+// Routes
+app.post('/messages', async (req, res) => {
+  const msg = new Message(req.body);
+  await msg.save();
+  res.json({ success: true });
+});
+
+app.get('/crm/:id', async (req, res) => {
+  const customer = await Customer.findById(req.params.id);
+  res.json(customer);
+});
+
+app.post('/campaigns', async (req, res) => {
+  // Logic to send WhatsApp/Email/SMS campaign
+  res.json({ success: true, campaignId: '12345' });
+});
+
+app.get('/analytics', async (req, res) => {
+  // Return dummy analytics data
+  res.json({ messagesSent: 1200, campaignsRun: 5, conversionRate: 0.12 });
+});
+
+const server = app.listen(5000, () => console.log('Server running on port 5000'));
+const io = socketIO(server);
+
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  socket.on('sendMessage', (data) => {
+    io.emit('newMessage', data);
+  });
+});
